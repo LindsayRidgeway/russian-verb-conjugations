@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Russian Verb Conjugations Practice App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    #main-container {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+    }
+    #left-panel {
+      flex: 3;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #right-panel {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .button-group {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .mode-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    .mode-button:hover {
+      background-color: #45a049;
+    }
+    .quiz-section {
+      margin-top: 20px;
+    }
+    .radio-option {
+      margin: 6px 0;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    .radio-option:hover {
+      background-color: #f0f0f0;
+    }
+    .filter-section {
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .filter-option {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+    .reveal-section {
+      margin: 15px 0;
+    }
+    .reveal-section button {
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    .reveal-section button:hover {
+      background-color: #1976D2;
+    }
+    .repeat-section {
+      margin: 10px 0;
+    }
+    .repeat-section button {
+      background-color: #FF9800;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    .repeat-section button:hover {
+      background-color: #F57C00;
+    }
+    .submit-button {
+      background-color: #9C27B0;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 15px;
+      transition: background-color 0.3s;
+    }
+    .submit-button:hover {
+      background-color: #7B1FA2;
+    }
+    .hidden {
+      display: none;
+    }
+    #challenge {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #4CAF50;
+      border-radius: 4px;
+    }
+    #result {
+      margin: 15px 0;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .result-correct {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .result-incorrect {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    #score {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin: 10px 0;
+    }
+    .filter-section h3 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    .verb-controls {
+      margin-bottom: 15px;
+    }
+    .verb-controls button {
+      background-color: #607D8B;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-right: 8px;
+      margin-bottom: 5px;
+    }
+    .verb-controls button:hover {
+      background-color: #455A64;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      font-style: italic;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Russian Verb Conjugations Practice App</h1>
+
+  <div id="main-container">
+    <div id="left-panel">
+      <div class="button-group">
+        <button class="mode-button" id="btn1">English → Russian</button>
+        <button class="mode-button" id="btn2">Russian → English</button>
+        <button class="mode-button" id="btn3">🔊 Spoken English</button>
+        <button class="mode-button" id="btn4">🔊 Spoken Russian</button>
+      </div>
+
+      <div class="quiz-section">
+        <div id="challenge">Select filters and a quiz mode to begin</div>
+        
+        <div id="repeat-section" class="repeat-section hidden">
+          <button id="repeat-btn">🔊 Repeat</button>
+        </div>
+
+        <div id="reveal-section" class="reveal-section hidden">
+          <button id="reveal-btn">Show Choices</button>
+        </div>
+
+        <div id="choices-container" class="hidden">
+          <div id="choices"></div>
+          <div class="quiz-section">
+            <button class="submit-button" id="submit-btn">Submit Answer</button>
+          </div>
+        </div>
+
+        <div id="result"></div>
+        <div id="score"></div>
+      </div>
+    </div>
+
+    <div id="right-panel">
+      <div class="filter-section">
+        <h3>Verbs</h3>
+        <div class="verb-controls">
+          <button onclick="selectAllVerbs()">Select All</button>
+          <button onclick="clearAllVerbs()">Clear All</button>
+          <button onclick="selectEssentialVerbs()">Essential 20</button>
+        </div>
+        <div id="verb-container">
+          <!-- Verbs will be populated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <h3>Tenses</h3>
+        <div id="tense-container">
+          <div class="filter-option">
+            <input type="checkbox" name="tense" value="past" id="past" checked>
+            <label for="past">Past</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" name="tense" value="present" id="present">
+            <label for="present">Present</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" name="tense" value="future" id="future">
+            <label for="future">Future</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <h3>Aspects</h3>
+        <div id="aspect-container">
+          <div class="filter-option">
+            <input type="checkbox" name="aspect" value="imperfective" id="imperfective" checked>
+            <label for="imperfective">Imperfective</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" name="aspect" value="perfective" id="perfective">
+            <label for="perfective">Perfective</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <h3>Persons & Numbers</h3>
+        <div id="person-container">
+          <div class="filter-option">
+            <input type="checkbox" name="person" value="1sg" id="1sg" checked>
+            <label for="1sg">1st person singular (я)</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" name="person" value="2sg" id="2sg">
+            <label for="2sg">2nd person singular (ты)</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" name="person" value="3sg" id="3sg">
+            <label for="3sg">3rd person singular (он/она/оно)</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" name="person" value="1pl" id="1pl">
+            <label for="1pl">1st person plural (мы)</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" name="person" value="2pl" id="2pl">
+            <label for="2pl">2nd person plural (вы)</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" name="person" value="3pl" id="3pl">
+            <label for="3pl">3rd person plural (они)</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    To contact developer: <a href="mailto:LDRidgeway@gmail.com">LDRidgeway@gmail.com</a>
+  </footer>
+
+  <script src="verbdata.js"></script>
+  <script>
+    // App state
+    let currentCorrectAnswer = null;
+    let currentRound = [];
+    let currentIndex = 0;
+    let score = 0;
+    let currentMode = "en-to-ru";
+    let currentChallengeText = "";
+    let currentLanguage = "en-US";
+
+    // Speech synthesis
+    function speak(text, lang = "en-US") {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.rate = 0.9;
+      speechSynthesis.speak(utterance);
+    }
+
+    // Verb selection functions
+    function buildVerbCheckboxes() {
+      const container = document.getElementById('verb-container');
+      container.innerHTML = '';
+      
+      Object.keys(verbData).forEach(verbKey => {
+        const verb = verbData[verbKey];
+        const div = document.createElement('div');
+        div.className = 'filter-option';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = verbKey.replace('/', '_');
+        checkbox.value = verbKey;
+        checkbox.className = 'verb-checkbox';
+        
+        const label = document.createElement('label');
+        label.htmlFor = checkbox.id;
+        label.textContent = `${verbKey} (${verb.english})`;
+        
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        container.appendChild(div);
+      });
+      
+      // Select first verb by default
+      if (container.firstChild) {
+        container.firstChild.querySelector('input').checked = true;
+      }
+    }
+
+    function selectAllVerbs() {
+      document.querySelectorAll('.verb-checkbox').forEach(cb => cb.checked = true);
+    }
+
+    function clearAllVerbs() {
+      document.querySelectorAll('.verb-checkbox').forEach(cb => cb.checked = false);
+    }
+
+    function selectEssentialVerbs() {
+      clearAllVerbs();
+      const essential = [
+        'быть/побыть', 'иметь/иметь', 'делать/сделать', 'сказать/сказать', 'идти/пойти',
+        'знать/узнать', 'видеть/увидеть', 'хотеть/захотеть', 'говорить/сказать', 'работать/поработать',
+        'жить/пожить', 'читать/прочитать', 'писать/написать', 'думать/подумать', 'давать/дать',
+        'покупать/купить', 'есть/съесть', 'пить/выпить', 'спать/поспать', 'учить/выучить'
+      ];
+      
+      essential.forEach(verb => {
+        const checkbox = document.querySelector(`input[value="${verb}"]`);
+        if (checkbox) checkbox.checked = true;
+      });
+    }
+
+    // Filter functions
+    function getSelectedVerbs() {
+      const checkboxes = document.querySelectorAll('.verb-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    function getSelectedTenses() {
+      const checkboxes = document.querySelectorAll('#tense-container input[type="checkbox"]:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    function getSelectedAspects() {
+      const checkboxes = document.querySelectorAll('#aspect-container input[type="checkbox"]:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    function getSelectedPersons() {
+      const checkboxes = document.querySelectorAll('#person-container input[type="checkbox"]:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    // Data flattening function
+    function flattenVerbData(selectedVerbs, selectedTenses, selectedAspects, selectedPersons) {
+      let flatData = [];
+      
+      selectedVerbs.forEach(verbKey => {
+        const verb = verbData[verbKey];
+        if (!verb) return;
+        
+        selectedTenses.forEach(tense => {
+          selectedAspects.forEach(aspect => {
+            if (verb.conjugations[tense] && verb.conjugations[tense][aspect]) {
+              const conjugations = verb.conjugations[tense][aspect];
+              
+              Object.keys(conjugations).forEach(personKey => {
+                // Handle past tense gender forms
+                if (tense === 'past') {
+                  const basePerson = personKey.replace(/_[mfn]$/, '');
+                  if (selectedPersons.includes(basePerson) || selectedPersons.includes(personKey)) {
+                    flatData.push({
+                      verb: verbKey,
+                      verbEnglish: verb.english,
+                      tense: tense,
+                      aspect: aspect,
+                      person: personKey,
+                      russian: conjugations[personKey].russian,
+                      english: conjugations[personKey].english
+                    });
+                  }
+                } else {
+                  // Present and future tenses
+                  if (selectedPersons.includes(personKey)) {
+                    flatData.push({
+                      verb: verbKey,
+                      verbEnglish: verb.english,
+                      tense: tense,
+                      aspect: aspect,
+                      person: personKey,
+                      russian: conjugations[personKey].russian,
+                      english: conjugations[personKey].english
+                    });
+                  }
+                }
+              });
+            }
+          });
+        });
+      });
+      
+      return flatData;
+    }
+
+    // Utility functions
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function hideAllQuizElements() {
+      document.getElementById('reveal-section').classList.add('hidden');
+      document.getElementById('choices-container').classList.add('hidden');
+      document.getElementById('repeat-section').classList.add('hidden');
+      document.getElementById('result').innerText = '';
+      document.getElementById('score').innerText = '';
+    }
+
+    // Main quiz logic
+    function startNewRound(mode) {
+      const selectedVerbs = getSelectedVerbs();
+      const selectedTenses = getSelectedTenses();
+      const selectedAspects = getSelectedAspects();
+      const selectedPersons = getSelectedPersons();
+      
+      if (selectedVerbs.length === 0) {
+        document.getElementById('challenge').innerText = 'Please select at least one verb.';
+        hideAllQuizElements();
+        return;
+      }
+      
+      if (selectedTenses.length === 0) {
+        document.getElementById('challenge').innerText = 'Please select at least one tense.';
+        hideAllQuizElements();
+        return;
+      }
+      
+      if (selectedAspects.length === 0) {
+        document.getElementById('challenge').innerText = 'Please select at least one aspect.';
+        hideAllQuizElements();
+        return;
+      }
+      
+      if (selectedPersons.length === 0) {
+        document.getElementById('challenge').innerText = 'Please select at least one person/number.';
+        hideAllQuizElements();
+        return;
+      }
+
+      const availableData = flattenVerbData(selectedVerbs, selectedTenses, selectedAspects, selectedPersons);
+
+      if (availableData.length < 3) {
+        document.getElementById('challenge').innerText = `Not enough data for selected filters. Found ${availableData.length} items, need at least 3.`;
+        hideAllQuizElements();
+        return;
+      }
+
+      currentMode = mode;
+      score = 0;
+      currentIndex = 0;
+      document.getElementById('result').innerText = '';
+      document.getElementById('score').innerText = 'Score: 0 for 0';
+
+      shuffleArray(availableData);
+      currentRound = availableData.slice(0, Math.min(10, availableData.length));
+      showCurrentChallenge();
+    }
+
+    function showCurrentChallenge() {
+      const challenge = currentRound[currentIndex];
+      const selectedVerbs = getSelectedVerbs();
+      const selectedTenses = getSelectedTenses();
+      const selectedAspects = getSelectedAspects();
+      const selectedPersons = getSelectedPersons();
+      const allOptions = flattenVerbData(selectedVerbs, selectedTenses, selectedAspects, selectedPersons);
+      
+      let challengeText, correct, wrongField, lang;
+
+      if (currentMode === "en-to-ru" || currentMode === "spoken-en-to-ru") {
+        challengeText = challenge.english;
+        correct = challenge.russian;
+        wrongField = "russian";
+        lang = "en-US";
+      } else {
+        challengeText = challenge.russian;
+        correct = challenge.english;
+        wrongField = "english";
+        lang = "ru-RU";
+      }
+
+      currentCorrectAnswer = correct;
+      currentChallengeText = challengeText;
+      currentLanguage = lang;
+      document.getElementById('result').innerText = '';
+
+      // Hide choices initially
+      document.getElementById('choices-container').classList.add('hidden');
+      document.getElementById('reveal-section').classList.remove('hidden');
+
+      if (currentMode.startsWith("spoken")) {
+        document.getElementById('challenge').innerText = '🔊 Listen carefully...';
+        document.getElementById('repeat-section').classList.remove('hidden');
+        speak(challengeText, lang);
+      } else {
+        document.getElementById('challenge').innerText = challengeText;
+        document.getElementById('repeat-section').classList.add('hidden');
+      }
+
+      // Prepare choices
+      const decoys = allOptions
+        .filter(item => item[wrongField] !== correct)
+        .map(item => item[wrongField]);
+      
+      shuffleArray(decoys);
+
+      const choices = [...decoys.slice(0, Math.min(allOptions.length - 1, 9)), correct];
+      shuffleArray(choices);
+
+      const choicesEl = document.getElementById('choices');
+      choicesEl.innerHTML = '';
+      choices.forEach((choice, index) => {
+        const div = document.createElement('div');
+        div.className = 'radio-option';
+        div.innerHTML = `<input type="radio" name="answer" value="${choice}" id="opt${index}"> <label for="opt${index}">${choice}</label>`;
+        choicesEl.appendChild(div);
+      });
+    }
+
+    // Event listeners
+    document.getElementById('btn1').addEventListener('click', () => {
+      startNewRound("en-to-ru");
+    });
+
+    document.getElementById('btn2').addEventListener('click', () => {
+      startNewRound("ru-to-en");
+    });
+
+    document.getElementById('btn3').addEventListener('click', () => {
+      startNewRound("spoken-en-to-ru");
+    });
+
+    document.getElementById('btn4').addEventListener('click', () => {
+      startNewRound("spoken-ru-to-en");
+    });
+
+    document.getElementById('reveal-btn').addEventListener('click', () => {
+      document.getElementById('reveal-section').classList.add('hidden');
+      document.getElementById('choices-container').classList.remove('hidden');
+    });
+
+    document.getElementById('repeat-btn').addEventListener('click', () => {
+      speak(currentChallengeText, currentLanguage);
+    });
+
+    document.getElementById('submit-btn').addEventListener('click', () => {
+      const selected = document.querySelector('input[name="answer"]:checked');
+      const resultEl = document.getElementById('result');
+      
+      if (!selected) {
+        resultEl.innerText = 'Please select an answer.';
+        resultEl.className = '';
+        return;
+      }
+
+      if (selected.value === currentCorrectAnswer) {
+        score++;
+        resultEl.innerText = 'Correct!';
+        resultEl.className = 'result-correct';
+      } else {
+        resultEl.innerText = `Incorrect. Correct answer: ${currentCorrectAnswer}`;
+        resultEl.className = 'result-incorrect';
+      }
+
+      document.getElementById('score').innerText = `Score: ${score} for ${currentIndex + 1}`;
+
+      currentIndex++;
+      if (currentIndex < currentRound.length) {
+        setTimeout(showCurrentChallenge, 2000);
+      } else {
+        setTimeout(() => {
+          document.getElementById('challenge').innerText = `Round complete! Final score: ${score}/${currentRound.length}`;
+          hideAllQuizElements();
+        }, 2000);
+      }
+    });
+
+    // Initialize
+    window.onload = function() {
+      buildVerbCheckboxes();
+    };
+  </script>
+</body>
+</html>
