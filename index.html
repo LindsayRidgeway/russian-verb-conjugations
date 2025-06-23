@@ -220,14 +220,16 @@
 
     <div id="right-panel">
       <div class="filter-section">
-        <h3>Verbs</h3>
-        <div class="verb-controls">
-          <button onclick="selectAllVerbs()">Select All</button>
-          <button onclick="clearAllVerbs()">Clear All</button>
-          <button onclick="selectEssentialVerbs()">Essential 20</button>
-        </div>
-        <div id="verb-container">
-          <!-- Verbs will be populated by JavaScript -->
+        <h3>Verb Groups</h3>
+        <div id="verb-group-container">
+          <div class="filter-option">
+            <input type="checkbox" id="essential-group" value="essential" checked>
+            <label for="essential-group">Essential 20</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="daily-actions-group" value="daily-actions">
+            <label for="daily-actions-group">Daily Actions</label>
+          </div>
         </div>
       </div>
 
@@ -367,6 +369,19 @@
       ];
       
       essential.forEach(verb => {
+        const checkbox = document.querySelector(`input[value="${verb}"]`);
+        if (checkbox) checkbox.checked = true;
+      });
+    }
+
+    function selectDailyActions() {
+      clearAllVerbs();
+      const dailyActions = [
+        'открывать/открыть', 'закрывать/закрыть', 'начинать/начать', 'кончать/кончить',
+        'слушать/послушать', 'спрашивать/спросить', 'отвечать/ответить', 'помогать/помочь'
+      ];
+      
+      dailyActions.forEach(verb => {
         const checkbox = document.querySelector(`input[value="${verb}"]`);
         if (checkbox) checkbox.checked = true;
       });
@@ -630,7 +645,7 @@
 
     // Initialize
     window.onload = function() {
-      buildVerbCheckboxes();
+      // No need to build individual verb checkboxes anymore
     };
   </script>
 </body>
