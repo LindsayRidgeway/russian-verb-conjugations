@@ -157,23 +157,6 @@
       margin-bottom: 15px;
       font-size: 16px;
     }
-    .verb-controls {
-      margin-bottom: 15px;
-    }
-    .verb-controls button {
-      background-color: #607D8B;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      margin-right: 8px;
-      margin-bottom: 5px;
-    }
-    .verb-controls button:hover {
-      background-color: #455A64;
-    }
     footer {
       margin-top: 40px;
       font-size: 0.9em;
@@ -301,7 +284,7 @@
     To contact developer: <a href="mailto:LDRidgeway@gmail.com">LDRidgeway@gmail.com</a>
   </footer>
 
-  <script src="verbdata.js"></script>
+  <script src="quizdata.js"></script>
   <script>
     // App state
     let currentCorrectAnswer = null;
@@ -320,76 +303,9 @@
       speechSynthesis.speak(utterance);
     }
 
-    // Verb selection functions
-    function buildVerbCheckboxes() {
-      const container = document.getElementById('verb-container');
-      container.innerHTML = '';
-      
-      Object.keys(verbData).forEach(verbKey => {
-        const verb = verbData[verbKey];
-        const div = document.createElement('div');
-        div.className = 'filter-option';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = verbKey.replace('/', '_');
-        checkbox.value = verbKey;
-        checkbox.className = 'verb-checkbox';
-        
-        const label = document.createElement('label');
-        label.htmlFor = checkbox.id;
-        label.textContent = `${verbKey} (${verb.english})`;
-        
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        container.appendChild(div);
-      });
-      
-      // Select first verb by default
-      if (container.firstChild) {
-        container.firstChild.querySelector('input').checked = true;
-      }
-    }
-
-    function selectAllVerbs() {
-      document.querySelectorAll('.verb-checkbox').forEach(cb => cb.checked = true);
-    }
-
-    function clearAllVerbs() {
-      document.querySelectorAll('.verb-checkbox').forEach(cb => cb.checked = false);
-    }
-
-    function selectEssentialVerbs() {
-      clearAllVerbs();
-      const essential = [
-        'быть/побыть', 'иметь/иметь', 'делать/сделать', 'сказать/сказать', 'идти/пойти',
-        'знать/узнать', 'видеть/увидеть', 'хотеть/захотеть', 'говорить/сказать', 'работать/поработать',
-        'жить/пожить', 'читать/прочитать', 'писать/написать', 'думать/подумать', 'давать/дать',
-        'покупать/купить', 'есть/съесть', 'пить/выпить', 'спать/поспать', 'учить/выучить'
-      ];
-      
-      essential.forEach(verb => {
-        const checkbox = document.querySelector(`input[value="${verb}"]`);
-        if (checkbox) checkbox.checked = true;
-      });
-    }
-
-    function selectDailyActions() {
-      clearAllVerbs();
-      const dailyActions = [
-        'открывать/открыть', 'закрывать/закрыть', 'начинать/начать', 'кончать/кончить',
-        'слушать/послушать', 'спрашивать/спросить', 'отвечать/ответить', 'помогать/помочь'
-      ];
-      
-      dailyActions.forEach(verb => {
-        const checkbox = document.querySelector(`input[value="${verb}"]`);
-        if (checkbox) checkbox.checked = true;
-      });
-    }
-
-    // Filter functions
-    function getSelectedVerbs() {
-      const checkboxes = document.querySelectorAll('.verb-checkbox:checked');
+    // Filter functions - Updated for group-based system
+    function getSelectedVerbGroups() {
+      const checkboxes = document.querySelectorAll('#verb-group-container input[type="checkbox"]:checked');
       return Array.from(checkboxes).map(cb => cb.value);
     }
 
@@ -408,12 +324,15 @@
       return Array.from(checkboxes).map(cb => cb.value);
     }
 
-    // Data flattening function
-    function flattenVerbData(selectedVerbs, selectedTenses, selectedAspects, selectedPersons) {
+    // Data flattening function - Updated to work with groups
+    function flattenVerbData(selectedGroups, selectedTenses, selectedAspects, selectedPersons) {
       let flatData = [];
       
-      selectedVerbs.forEach(verbKey => {
-        const verb = verbData[verbKey];
+      // Get verbs that belong to the selected groups
+      const verbsToInclude = getVerbsByGroups(selectedGroups);
+      
+      Object.keys(verbsToInclude).forEach(verbKey => {
+        const verb = verbsToInclude[verbKey];
         if (!verb) return;
         
         selectedTenses.forEach(tense => {
@@ -475,15 +394,15 @@
       document.getElementById('score').innerText = '';
     }
 
-    // Main quiz logic
-    function startNewRound(mode) {
-      const selectedVerbs = getSelectedVerbs();
+    // Main quiz logic - Updated for group-based system
+    async function startNewRound(mode) {
+      const selectedGroups = getSelectedVerbGroups();
       const selectedTenses = getSelectedTenses();
       const selectedAspects = getSelectedAspects();
       const selectedPersons = getSelectedPersons();
       
-      if (selectedVerbs.length === 0) {
-        document.getElementById('challenge').innerText = 'Please select at least one verb.';
+      if (selectedGroups.length === 0) {
+        document.getElementById('challenge').innerText = 'Please select at least one verb group.';
         hideAllQuizElements();
         return;
       }
@@ -506,7 +425,16 @@
         return;
       }
 
-      const availableData = flattenVerbData(selectedVerbs, selectedTenses, selectedAspects, selectedPersons);
+      // Load the selected verb groups
+      try {
+        await loadVerbGroups(selectedGroups);
+      } catch (error) {
+        document.getElementById('challenge').innerText = 'Error loading verb data. Please try again.';
+        hideAllQuizElements();
+        return;
+      }
+
+      const availableData = flattenVerbData(selectedGroups, selectedTenses, selectedAspects, selectedPersons);
 
       if (availableData.length < 3) {
         document.getElementById('challenge').innerText = `Not enough data for selected filters. Found ${availableData.length} items, need at least 3.`;
@@ -525,13 +453,16 @@
       showCurrentChallenge();
     }
 
-    function showCurrentChallenge() {
+    async function showCurrentChallenge() {
       const challenge = currentRound[currentIndex];
-      const selectedVerbs = getSelectedVerbs();
+      const selectedGroups = getSelectedVerbGroups();
       const selectedTenses = getSelectedTenses();
       const selectedAspects = getSelectedAspects();
       const selectedPersons = getSelectedPersons();
-      const allOptions = flattenVerbData(selectedVerbs, selectedTenses, selectedAspects, selectedPersons);
+      
+      // Make sure data is loaded
+      await loadVerbGroups(selectedGroups);
+      const allOptions = flattenVerbData(selectedGroups, selectedTenses, selectedAspects, selectedPersons);
       
       let challengeText, correct, wrongField, lang;
 
@@ -642,11 +573,6 @@
         }, 2000);
       }
     });
-
-    // Initialize
-    window.onload = function() {
-      // No need to build individual verb checkboxes anymore
-    };
   </script>
   <script data-goatcounter="https://russian-verb-conjugations.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
